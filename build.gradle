@@ -259,10 +259,6 @@ shadowJar {
     relocate 'org.apache.commons.pool2', 'me.cortex.voxy.shadow.commons.pool2'
     relocate 'net.jpountz', 'me.cortex.voxy.shadow.lz4'
 
-    doFirst {
-        delete fileTree(getDestinationDirectory().get())
-    }
-
     if (!isInGHA) {
         def hash = gitCommitHash();
         if (!hash.equals("<UnknownCommit>")) {
@@ -303,10 +299,18 @@ shadowJar {
     }
 }
 
-reobf {
-    shadowJar {}
+afterEvaluate {
+    def reobfJar = tasks.named('reobfJar')
+    def shadowJarTask = tasks.named('shadowJar')
+
+    reobfJar.configure {
+        input = shadowJarTask.flatMap { it.archiveFile }
+        dependsOn(shadowJarTask)
+    }
 }
-tasks.build.dependsOn shadowJar
+
+jar.enabled = false
+assemble.dependsOn(shadowJar)
 
 if (!isInGHA) {
     repositories {
