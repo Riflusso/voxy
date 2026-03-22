@@ -1,0 +1,30 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All-Rights-Reserved"
+
+[[mods]]
+modId="voxy"
+version="${version}"
+displayName="Voxy"
+authors="Cortex"
+description='''Far distance rendering mod utilising LoDs'''
+logoFile="assets/voxy/icon.png"
+
+# Dependencies
+[[dependencies.voxy]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.voxy]]
+modId="forge"
+mandatory=true
+versionRange="[47,)"
+ordering="NONE"
+side="BOTH"
+
+[modproperties.voxy]
+"commit" = "${commit}"
+"buildtime" = "${buildtime}"

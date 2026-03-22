@@ -12,10 +12,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.function.BiFunction;
 
 //Thanks iris for making me need todo this ;-; _irritater_
-@Mixin(RenderSystem.class)
+@Mixin(value = RenderSystem.class, priority = 900)
 public class MixinRenderSystem {
     //We need to inject before iris to initalize our systems
-    @Inject(method = "initRenderer", order = 900, remap = false, at = @At("RETURN"))
+    @Inject(method = "initRenderer", remap = false, at = @At("RETURN"))
     private static void voxy$injectInit(int debugVerbosity, boolean sync, CallbackInfo ci) {
         VoxyClient.initVoxyClient();
     }

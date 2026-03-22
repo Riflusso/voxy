@@ -1,5 +1,7 @@
 package me.cortex.voxy.client.mixin.minecraft;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.platform.DisplayData;
 import com.mojang.blaze3d.platform.ScreenManager;
 import com.mojang.blaze3d.platform.Window;
@@ -13,8 +15,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Window.class)
 public class MixinWindow {
-    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/Window;setBootErrorCallback()V"))
-    private void injectInitWindow(WindowEventHandler eventHandler, ScreenManager monitorTracker, DisplayData settings, String fullscreenVideoMode, String title, CallbackInfo ci) {
+    @WrapOperation(
+            method = "<init>",
+            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/Window;setBootErrorCallback()V")
+    )
+    private void injectInitWindow(Window instance, Operation<Void> original) {
         //System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
         var prop = System.getProperty("voxy.forceGpuSelectionIndex", "NO");
         if (!prop.equals("NO")) {
@@ -24,5 +29,7 @@ public class MixinWindow {
         //Force the current thread priority to be realtime
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         ThreadUtils.SetSelfThreadPriorityWin32(ThreadUtils.WIN32_THREAD_PRIORITY_TIME_CRITICAL);
+
+        original.call(instance);
     }
 }

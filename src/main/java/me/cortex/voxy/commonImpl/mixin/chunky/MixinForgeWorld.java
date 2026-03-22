@@ -12,14 +12,14 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 
+import org.popcraft.chunky.platform.ForgeWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.popcraft.chunky.platform.FabricWorld;
 
 import java.util.concurrent.CompletableFuture;
 
-@Mixin(FabricWorld.class)
-public class MixinFabricWorld {
+@Mixin(ForgeWorld.class)
+public class MixinForgeWorld {
 
     @WrapOperation(
         method = "getChunkAtAsync",

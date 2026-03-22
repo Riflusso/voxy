@@ -27,7 +27,12 @@ public class RenderPipelineFactory {
     private static AbstractRenderPipeline createIrisPipeline(AsyncNodeManager nodeManager, NodeCleaner nodeCleaner, HierarchicalOcclusionTraverser traversal, BooleanSupplier frexSupplier) {
         var irisPipe = Iris.getPipelineManager().getPipelineNullable();
         if (irisPipe == null) {
+            Logger.info("Iris pipe is null");
             return null;
+        }
+        Logger.info("Pipe class: " + irisPipe.getClass().getName());
+        for (Class<?> iface : irisPipe.getClass().getInterfaces()) {
+            Logger.info("Implements: " + iface.getName());
         }
         if (irisPipe instanceof IGetIrisVoxyPipelineData getVoxyPipeData) {
             var pipeData = getVoxyPipeData.voxy$getPipelineData();

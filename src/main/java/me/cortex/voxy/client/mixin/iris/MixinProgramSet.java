@@ -1,5 +1,8 @@
 package me.cortex.voxy.client.mixin.iris;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import me.cortex.voxy.client.config.VoxyConfig;
 import me.cortex.voxy.client.core.util.IrisUtil;
 import me.cortex.voxy.client.iris.IGetVoxyPatchData;
@@ -24,11 +27,21 @@ public class MixinProgramSet implements IGetVoxyPatchData {
     @Shadow @Final private PackDirectives packDirectives;
     @Unique IrisShaderPatch patchData;
 
-    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/irisshaders/iris/shaderpack/programs/ProgramSet;locateDirectives()V", shift = At.Shift.BEFORE))
-    private void voxy$injectPatchMaker(AbsolutePackPath directory, Function<AbsolutePackPath, String> sourceProvider, ShaderProperties shaderProperties, ShaderPack pack, CallbackInfo ci) {
+    @WrapOperation(
+            method = "<init>",
+            at = @At(value = "INVOKE", target = "Lnet/irisshaders/iris/shaderpack/programs/ProgramSet;locateDirectives()V")
+    )
+    private void voxy$wrapLocateDirectives(
+            ProgramSet instance,
+            Operation<Void> original,
+            @Local(argsOnly = true) AbsolutePackPath directory,
+            @Local(argsOnly = true) Function<AbsolutePackPath, String> sourceProvider,
+            @Local(argsOnly = true) ShaderPack pack
+    ) {
         if (VoxyConfig.CONFIG.isRenderingEnabled() && IrisUtil.SHADER_SUPPORT) {
             this.patchData = IrisShaderPatch.makePatch(pack, directory, sourceProvider);
         }
+        original.call(instance);
         /*
         if (this.patchData != null) {
             //Inject directives from voxy

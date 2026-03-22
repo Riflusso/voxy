@@ -4,10 +4,10 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import me.cortex.voxy.common.Logger;
+import me.cortex.voxy.common.util.ModLoaderUtil;
 import me.cortex.voxy.common.util.cpu.CpuLayout;
 import me.cortex.voxy.commonImpl.VoxyCommon;
 import me.jellysquid.mods.sodium.client.gui.options.storage.OptionStorage;
-import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -75,8 +75,7 @@ public class VoxyConfig implements OptionStorage<VoxyConfig> {
     }
 
     private static Path getConfigPath() {
-        return FabricLoader.getInstance()
-                .getConfigDir()
+        return ModLoaderUtil.getConfigDir()
                 .resolve("voxy-config.json");
     }
 

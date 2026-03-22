@@ -2,8 +2,8 @@ package me.cortex.voxy.client.mixin.minecraft;
 
 import me.cortex.voxy.client.ICheekyClientChunkCache;
 import me.cortex.voxy.client.config.VoxyConfig;
+import me.cortex.voxy.common.util.ModLoaderUtil;
 import me.cortex.voxy.common.world.service.VoxelIngestService;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientChunkCache.class)
 public class MixinClientChunkCache implements ICheekyClientChunkCache {
     @Unique
-    private static final boolean BOBBY_INSTALLED = FabricLoader.getInstance().isModLoaded("bobby");
+    private static final boolean BOBBY_INSTALLED = ModLoaderUtil.isModLoaded("bobby");
 
     @Shadow volatile ClientChunkCache.Storage storage;
 

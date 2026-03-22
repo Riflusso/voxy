@@ -2,18 +2,19 @@ package me.cortex.voxy.commonImpl;
 
 import me.cortex.voxy.common.Logger;
 import me.cortex.voxy.common.config.Serialization;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
+import me.cortex.voxy.common.util.ModLoaderUtil;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.loading.FMLLoader;
 
-public class VoxyCommon implements ModInitializer {
-    public static final String MOD_VERSION;
-    public static final boolean IS_DEDICATED_SERVER;
-    public static final boolean IS_IN_MINECRAFT;
+public class VoxyCommon {
+    public static String MOD_VERSION;
+    public static boolean IS_DEDICATED_SERVER;
+    public static boolean IS_IN_MINECRAFT;
 
-    static {
-        ModContainer mod = (ModContainer) FabricLoader.getInstance().getModContainer("voxy").orElse(null);
+    public static void cleanInit() {
+        ModContainer mod = ModLoaderUtil.getModContainerById("voxy").orElse(null);
         if (mod == null) {
             IS_IN_MINECRAFT = false;
             Logger.error("Running voxy without minecraft");
@@ -21,10 +22,10 @@ public class VoxyCommon implements ModInitializer {
             IS_DEDICATED_SERVER = false;
         } else {
             IS_IN_MINECRAFT = true;
-            var version = mod.getMetadata().getVersion().getFriendlyString();
-            var commit = mod.getMetadata().getCustomValue("commit").getAsString();
+            var version = mod.getModInfo().getVersion().toString();
+            var commit = mod.getModInfo().getModProperties().get("commit").toString();
             MOD_VERSION = version + "-" + commit;
-            IS_DEDICATED_SERVER = FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER;
+            IS_DEDICATED_SERVER = ModLoaderUtil.getDist() == Dist.DEDICATED_SERVER;
             Serialization.init();
         }
     }
@@ -40,11 +41,6 @@ public class VoxyCommon implements ModInitializer {
 
     public static void breakpoint() {
         int breakpoint = 0;
-    }
-
-    @Override
-    public void onInitialize() {
-
     }
 
     public interface IInstanceFactory {VoxyInstance create();}

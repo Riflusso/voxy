@@ -2,10 +2,10 @@ package me.cortex.voxy.common.voxelization;
 
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import me.cortex.voxy.client.core.util.ExpansionUgly;
+import me.cortex.voxy.common.util.ModLoaderUtil;
 import me.cortex.voxy.common.world.other.Mapper;
 import me.cortex.voxy.common.world.other.Mipper;
 import me.jellysquid.mods.lithium.common.world.chunk.LithiumHashPalette;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Holder;
 import net.minecraft.util.SimpleBitStorage;
 import net.minecraft.util.ZeroBitStorage;
@@ -21,7 +21,7 @@ import net.minecraft.world.level.chunk.SingleValuePalette;
 import java.util.WeakHashMap;
 
 public class WorldConversionFactory {
-    private static final boolean LITHIUM_INSTALLED = FabricLoader.getInstance().isModLoaded("lithium");
+    private static final boolean LITHIUM_INSTALLED = ModLoaderUtil.isModLoaded("lithium") || ModLoaderUtil.isModLoaded("radium");
 
     private static final class Cache {
         private final int[] biomeCache = new int[4*4*4];

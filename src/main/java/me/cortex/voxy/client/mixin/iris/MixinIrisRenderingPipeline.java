@@ -1,5 +1,7 @@
 package me.cortex.voxy.client.mixin.iris;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import me.cortex.voxy.client.core.IGetVoxyRenderSystem;
 import me.cortex.voxy.client.core.util.IrisUtil;
 import me.cortex.voxy.client.iris.IGetIrisVoxyPipelineData;
@@ -7,8 +9,11 @@ import me.cortex.voxy.client.iris.IGetVoxyPatchData;
 import me.cortex.voxy.client.iris.IrisShaderPatch;
 import me.cortex.voxy.client.iris.IrisVoxyRenderPipelineData;
 import net.irisshaders.iris.gl.buffer.ShaderStorageBufferHolder;
+import net.irisshaders.iris.gl.program.ComputeProgram;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.shaderpack.programs.ComputeSource;
 import net.irisshaders.iris.shaderpack.programs.ProgramSet;
+import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Final;
@@ -27,18 +32,20 @@ public class MixinIrisRenderingPipeline implements IGetVoxyPatchData, IGetIrisVo
     @Unique
     IrisVoxyRenderPipelineData pipeline;
 
-    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/irisshaders/iris/pipeline/transform/ShaderPrinter;resetPrintState()V", shift = At.Shift.AFTER))
-    private void voxy$injectPatchDataStore(ProgramSet programSet, CallbackInfo ci) {
+    @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/irisshaders/iris/pipeline/transform/ShaderPrinter;resetPrintState()V"))
+    private void voxy$wrapResetPrintState(Operation<Void> original, ProgramSet programSet) {
+        original.call();
         if (IrisUtil.SHADER_SUPPORT) {
             this.patchData = ((IGetVoxyPatchData) programSet).voxy$getPatchData();
         }
     }
 
-    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/irisshaders/iris/pipeline/IrisRenderingPipeline;createSetupComputes([Lnet/irisshaders/iris/shaderpack/programs/ComputeSource;Lnet/irisshaders/iris/shaderpack/programs/ProgramSet;Lnet/irisshaders/iris/shaderpack/texture/TextureStage;)[Lnet/irisshaders/iris/gl/program/ComputeProgram;"))
-    private void voxy$injectPipeline(ProgramSet programSet, CallbackInfo ci) {
+    @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/irisshaders/iris/pipeline/IrisRenderingPipeline;createSetupComputes([Lnet/irisshaders/iris/shaderpack/programs/ComputeSource;Lnet/irisshaders/iris/shaderpack/programs/ProgramSet;Lnet/irisshaders/iris/shaderpack/texture/TextureStage;)[Lnet/irisshaders/iris/gl/program/ComputeProgram;"))
+    private ComputeProgram[] voxy$wrapCreateSetupComputes(IrisRenderingPipeline instance, ComputeSource[] sources, ProgramSet programSet, TextureStage stage, Operation<ComputeProgram[]> original) {
         if (this.patchData != null) {
             this.pipeline = IrisVoxyRenderPipelineData.buildPipeline((IrisRenderingPipeline)(Object)this, this.patchData, this.customUniforms, this.shaderStorageBufferHolder);
         }
+        return original.call(instance, sources, programSet, stage);
     }
 
     @Inject(method = "beginLevelRendering", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;activeTexture(I)V", shift = At.Shift.BEFORE), remap = false)
