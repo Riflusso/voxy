@@ -259,6 +259,10 @@ shadowJar {
     relocate 'org.apache.commons.pool2', 'me.cortex.voxy.shadow.commons.pool2'
     relocate 'net.jpountz', 'me.cortex.voxy.shadow.lz4'
 
+    doFirst {
+        delete fileTree(getDestinationDirectory().get())
+    }
+
     if (!isInGHA) {
         def hash = gitCommitHash();
         if (!hash.equals("<UnknownCommit>")) {
