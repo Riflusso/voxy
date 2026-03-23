@@ -48,7 +48,7 @@ public class ThreadUtils {
         }
 
         if (masks == null) {
-            int retVal = 0;
+            int retVal = 0; // JNI.invokePPCI(Kernel32.GetCurrentThread(), 0, (short) 0, SetThreadSelectedCpuSetMasks);
             if (retVal == 0) {
                 throw new IllegalStateException();
             }
@@ -66,7 +66,7 @@ public class ThreadUtils {
                 MemoryUtil.memPutShort(ptr+i*16L+8L, groups[i]);
             }
 
-            int retVal = 0;
+            int retVal = 0; // JNI.invokePPCI(Kernel32.GetCurrentThread(), ptr, (short)masks.length, SetThreadSelectedCpuSetMasks);
             if (retVal == 0) {
                 throw new IllegalStateException();
             }

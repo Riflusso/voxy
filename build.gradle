@@ -1,7 +1,7 @@
 plugins {
     id 'net.minecraftforge.gradle' version '6.0.51'
     id 'org.spongepowered.mixin' version '0.7.38'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.gradleup.shadow' version '9.4.0'
     id 'maven-publish'
 }
 
@@ -169,19 +169,40 @@ dependencies {
     modRuntimeOnlyMsk("maven.modrinth:DistantHorizons:2.4.5-b-1.20.1")
 }
 
+sourceSets {
+    main {
+        java.srcDirs = ['src/main/java']
+    }
+    java21 {
+        java.srcDirs = ['src/java21/java']
+        compileClasspath += sourceSets.main.output
+        compileClasspath += sourceSets.main.compileClasspath
+    }
+}
 
 def targetJavaVersion = 17
 tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
-    it.options.release = targetJavaVersion
-    it.options.deprecation = true
-    it.options.compilerArgs.add("-AoutRefMapFile=${project.file('build/resources/main/voxy.refmap.json')}".toString())
+    options.encoding = "UTF-8"
+    options.deprecation = true
+    options.compilerArgs.add("-AoutRefMapFile=${project.file('build/resources/main/voxy.refmap.json')}".toString())
+
+    if (name != "compileJava21") {
+        options.release = targetJavaVersion
+    }
+}
+
+tasks.register('compileJava21', JavaCompile) {
+    source = sourceSets.java21.java
+    classpath = sourceSets.java21.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir("classes/java21")
+    options.release = 21
+    options.encoding = "UTF-8"
 }
 
 java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    def javaVersion = JavaVersion.toVersion(21)
     if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+        toolchain.languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -214,14 +235,15 @@ repositories {
 dependencies {
     shadowLibrary "org.lwjgl:lwjgl-lmdb:$lwjglVersion"
     shadowLibrary "org.lwjgl:lwjgl-zstd:$lwjglVersion"
+    minecraftLibrary("org.lwjgl:lwjgl-lmdb:$lwjglVersion") { transitive = false }
     minecraftLibrary("org.lwjgl:lwjgl-zstd:$lwjglVersion") { transitive = false }
 
     runtimeOnly "org.lwjgl:lwjgl:$lwjglVersion:natives-windows"
     runtimeOnly "org.lwjgl:lwjgl:$lwjglVersion:natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-lmdb:$lwjglVersion:natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-zstd:$lwjglVersion:natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-lmdb:$lwjglVersion:natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-zstd:$lwjglVersion:natives-linux"
+    minecraftLibrary("org.lwjgl:lwjgl-lmdb:$lwjglVersion:natives-windows") { transitive = false }
+    minecraftLibrary("org.lwjgl:lwjgl-lmdb:$lwjglVersion:natives-linux")   { transitive = false }
+    minecraftLibrary("org.lwjgl:lwjgl-zstd:$lwjglVersion:natives-windows") { transitive = false }
+    minecraftLibrary("org.lwjgl:lwjgl-zstd:$lwjglVersion:natives-linux")   { transitive = false }
 
     shadowLibrary('org.rocksdb:rocksdbjni:10.2.1')
     minecraftLibrary('org.rocksdb:rocksdbjni:10.2.1') { transitive = false }
@@ -244,12 +266,21 @@ dependencies {
 shadowJar {
     archiveClassifier.set('')
     from sourceSets.main.output
+
+    dependsOn(tasks.compileJava21)
+    from(tasks.compileJava21.destinationDirectory) {
+        into("META-INF/versions/21")
+    }
+
     configurations = [project.configurations.shadowLibrary]
 
     mergeServiceFiles()
 
     manifest {
-        inheritFrom project.tasks.jar.manifest
+        attributes([
+                "Multi-Release": "true",
+                "MixinConfigs": "common.voxy.mixins.json,client.voxy.mixins.json"
+        ])
     }
 
     relocate 'com.llamalad7.mixinextras', 'me.cortex.voxy.mixinextras'
@@ -301,20 +332,17 @@ shadowJar {
         }
         return false
     }
+
+    zip64 true
 }
 
-afterEvaluate {
-    def reobfJar = tasks.named('reobfJar')
-    def shadowJarTask = tasks.named('shadowJar')
-
-    reobfJar.configure {
-        input = shadowJarTask.flatMap { it.archiveFile }
-        dependsOn(shadowJarTask)
-    }
+reobf {
+    shadowJar {}
 }
 
-jar.enabled = false
-assemble.dependsOn(shadowJar)
+jar.enabled = true
+jar.archiveClassifier.set('raw')
+assemble.dependsOn(tasks.reobfShadowJar)
 
 if (!isInGHA) {
     repositories {
