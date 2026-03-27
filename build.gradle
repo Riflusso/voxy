@@ -23,8 +23,8 @@ repositories {
     }
 
     maven {
-        name = "CaffeineMC"
-        url = "https://maven.caffeinemc.net/snapshots"
+        name "flashyreeseRepository"
+        url "https://maven.flashyreese.me/releases"
     }
 
     maven { url = "https://maven.shedaniel.me/" }
@@ -54,7 +54,7 @@ repositories {
 def gitCommitHash = { ->
     try {
         ExecOutput result = providers.exec {
-            commandLine = ['git', 'rev-parse', '--short', 'HEAD']
+            commandLine = ['git', 'rev-parse', 'HEAD']
             ignoreExitValue = true
         }
 
@@ -301,7 +301,7 @@ shadowJar {
     if (!isInGHA) {
         def hash = gitCommitHash();
         if (!hash.equals("<UnknownCommit>")) {
-            archiveClassifier.set(hash);
+            archiveClassifier.set(hash.substring(0,7));
         }
     }
 

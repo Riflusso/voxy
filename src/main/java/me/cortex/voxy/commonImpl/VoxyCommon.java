@@ -24,7 +24,7 @@ public class VoxyCommon {
             IS_IN_MINECRAFT = true;
             var version = mod.getModInfo().getVersion().toString();
             var commit = mod.getModInfo().getModProperties().get("commit").toString();
-            MOD_VERSION = version + "-" + commit;
+            MOD_VERSION = version + "-" + commit.substring(0,7);
             IS_DEDICATED_SERVER = ModLoaderUtil.getDist() == Dist.DEDICATED_SERVER;
             Serialization.init();
         }
